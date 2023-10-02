@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-application
+  namespace: default
+spec:
+  source:
+    repoURL: git@github.com:refaelb/argo.git
+    path: /
+    targetRevision: HEAD
+  destination:
+    server: https://127.0.0.1:53332
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+    hooks:
+      - name: presync-server-side-apply
+        hookType: Sync
+        sync:
+          skip: true
+      - name: sync-server-side-apply
+        hookType: Sync
+        sync:
+          strategic: true
