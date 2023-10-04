@@ -1,0 +1,14 @@
+name: gitops
+serviceAccountName: argo-events-sa
+triger: 
+  triger_argo_cd_server:
+    url: http://gitops-argocd-server.gitops.svc.cluster.local:80/api/webhook 
+  
+  triger_aplicationset_controller:
+    url: http://gitops-argocd-applicationset-controller.gitops.svc.cluster.local:7000/api/webhook
+
+repositories:
+    owner: infinit-il
+    names:
+      - demo-kubernetes-infrastructure
+webhookUrl: eventsource.d127-prot.dev.infini-t.io

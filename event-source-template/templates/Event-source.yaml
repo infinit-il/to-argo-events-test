@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: {{ .Values.name }}
+spec:
+  service:
+    ports:
+      - name: {{ .Values.name }}-event
+        port: 12000
+        targetPort: 12000
+
+  github:
+    {{ .Values.name }}-event:
+      repositories:
+        - owner: {{ $.Values.repositories.owner }}
+          names:
+          {{- range .Values.repositories.names }}
+            - {{ . }}
+          {{- end }}
+      webhook:
+        endpoint: /api/webhook
+        port: "12000"
+        method: "POST"
+        url: https://{{ .Values.webhookUrl }}
+        # k8s secret that contains the cert
+        # serverCertSecret:
+        #   name: github-creds
+        #   key: cert-key
+        # k8s secret that contains the private key
+        serverKeySecret:
+          name: github-creds
+          key: githubAppPrivateKey
+      events:
+        - "*"
+      apiToken:
+        name: github-access
+        key: token
+      webhookSecret:
+        name: github-access
+        key: hook-id
+      insecure: true
+      active: true
+      contentType: "json"

@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: {{ .Values.name }}
+spec:
+  template:
+    serviceAccountName: {{ .Values.serviceAccountName }}
+  dependencies:
+    - name: {{ .Values.name }}-dep
+      eventSourceName: {{ .Values.name }}
+      eventName: {{ .Values.name }}-event
+
+
+  triggers:
+    - template:
+        name: triger-argo-cd-server
+        http:
+          headers:
+            X-GitHub-Event: push
+          payload:
+            - dest: repository
+              src:
+                dataKey: body.repository
+                dependencyName: {{ .Values.name }}-dep
+                useRawData: true
+            - dest: ref
+              src:
+                dataKey: body.ref
+                dependencyName: {{ .Values.name }}-dep
+                useRawData: true
+          # dest: headers
+          url: {{ .Values.triger.triger_argo_cd_server.url }}
+
+
+    - template:
+        name: triger-aplicationset-controller
+        http:
+          headers:
+            X-GitHub-Event: push
+          payload:
+            - dest: repository
+              src:
+                dataKey: body.repository
+                dependencyName: {{ .Values.name }}-dep
+                useRawData: true
+            - dest: ref
+              src:
+                dataKey: body.ref
+                dependencyName: {{ .Values.name }}-dep
+                useRawData: true
+          # dest: headers
+          url: {{ .Values.triger.triger_aplicationset_controller.url }}
+          method: POST
+      retryStrategy:
+        steps: 3
+        duration: 3s
+      policy:
+        status:
+          allow:
+            - 200
+            - 201
+
